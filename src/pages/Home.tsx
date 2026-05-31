@@ -48,6 +48,44 @@ const Home: React.FC<HomeProps> = ({ onContactClick, onServicesClick, onProjects
     message: ""
   });
   const [plannerSuccess, setPlannerSuccess] = useState(false);
+  const [plannerSubmitting, setPlannerSubmitting] = useState(false);
+  const [plannerError, setPlannerError] = useState("");
+
+  const handlePlannerSubmit = async () => {
+    setPlannerSubmitting(true);
+    setPlannerError("");
+
+    try {
+      const response = await fetch("/api/send-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: plannerData.name,
+          email: plannerData.email,
+          phone: plannerData.phone,
+          projectType: plannerData.projectType,
+          scopeSize: plannerData.scopeSize,
+          location: plannerData.location,
+          timeframe: plannerData.timeframe,
+          message: plannerData.message,
+          formType: "planner"
+        }),
+      });
+
+      const data = await response.json();
+      if (response.ok && data.success) {
+        setPlannerSuccess(true);
+      } else {
+        setPlannerError(data.message || "Es gab ein Problem beim Speichern Ihrer Konfiguration.");
+      }
+    } catch (err) {
+      setPlannerError("Netzwerkfehler. Bitte versuchen Sie es später noch einmal.");
+    } finally {
+      setPlannerSubmitting(false);
+    }
+  };
 
   // States & helper functions for simulated premium Drag & Drop Photo Uploader
   const [uploadedFiles, setUploadedFiles] = useState<{ name: string; size: string }[]>([]);
@@ -1135,16 +1173,20 @@ const Home: React.FC<HomeProps> = ({ onContactClick, onServicesClick, onProjects
                     <button className="btn btn-secondary" onClick={() => setPlannerStep(2)}>
                       Zurück
                     </button>
+                    {plannerError && (
+                      <div style={{ color: "#e63946", fontSize: "0.95rem", margin: "1rem 0", fontWeight: 400, fontFamily: "var(--font-sans)", width: "100%", textAlign: "right" }}>
+                        ⚠️ {plannerError}
+                      </div>
+                    )}
+
                     <button 
                       className="btn btn-primary" 
-                      disabled={!plannerData.name || !plannerData.email}
-                      onClick={() => {
-                        setPlannerSuccess(true);
-                      }}
-                      style={{ opacity: (!plannerData.name || !plannerData.email) ? 0.5 : 1, cursor: (!plannerData.name || !plannerData.email) ? "not-allowed" : "pointer" }}
+                      disabled={!plannerData.name || !plannerData.email || plannerSubmitting}
+                      onClick={handlePlannerSubmit}
+                      style={{ opacity: (!plannerData.name || !plannerData.email || plannerSubmitting) ? 0.5 : 1, cursor: (!plannerData.name || !plannerData.email || plannerSubmitting) ? "not-allowed" : "pointer" }}
                     >
-                      Konfiguration absenden
-                      <ClipboardCheck size={14} style={{ marginLeft: "0.5rem" }} />
+                      {plannerSubmitting ? "Wird gesendet..." : "Konfiguration absenden"}
+                      {!plannerSubmitting && <ClipboardCheck size={14} style={{ marginLeft: "0.5rem" }} />}
                     </button>
                   </div>
                 </motion.div>

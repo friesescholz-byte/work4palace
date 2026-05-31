@@ -11,13 +11,41 @@ const ContactForm: React.FC = () => {
     message: ""
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate premium submission
-    setTimeout(() => {
-      setIsSubmitted(true);
-    }, 800);
+    setIsSubmitting(true);
+    setErrorMessage("");
+
+    try {
+      const response = await fetch("/api/send-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          projectType: formData.projectType,
+          message: formData.message,
+          formType: "contact"
+        }),
+      });
+
+      const data = await response.json();
+      if (response.ok && data.success) {
+        setIsSubmitted(true);
+      } else {
+        setErrorMessage(data.message || "Es gab ein Problem beim Senden Ihrer Anfrage.");
+      }
+    } catch (err) {
+      setErrorMessage("Netzwerkfehler. Bitte versuchen Sie es später noch einmal oder kontaktieren Sie uns direkt.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const ease = [0.16, 1, 0.3, 1] as const;
@@ -146,9 +174,20 @@ const ContactForm: React.FC = () => {
                     ></textarea>
                   </div>
 
-                  <button className="btn btn-primary" type="submit" style={submitBtnStyle}>
-                    Anfrage absenden
-                    <Send size={14} style={{ marginLeft: "0.75rem" }} />
+                  {errorMessage && (
+                    <div style={{ color: "#e63946", fontSize: "0.95rem", marginBottom: "1.5rem", fontWeight: 400, fontFamily: "var(--font-sans)" }}>
+                      ⚠️ {errorMessage}
+                    </div>
+                  )}
+
+                  <button 
+                    className="btn btn-primary" 
+                    type="submit" 
+                    style={submitBtnStyle}
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? "Wird gesendet..." : "Anfrage absenden"}
+                    {!isSubmitting && <Send size={14} style={{ marginLeft: "0.75rem" }} />}
                   </button>
                 </motion.form>
               ) : (
