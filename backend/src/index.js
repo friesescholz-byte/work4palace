@@ -243,7 +243,7 @@ export default {
             'Authorization': `Bearer ${apiKey}`,
           },
           body: JSON.stringify({
-            from: 'work4palace Manufaktur <anfragen@scholz-friese.de>',
+            from: 'work4palace Manufaktur <anfragen@scholz-friese-webdesign.de>',
             to: 'info@scholz-friese-webdesign.de',
             reply_to: email,
             subject: subject,

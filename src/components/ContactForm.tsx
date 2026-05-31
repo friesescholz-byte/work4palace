@@ -1,6 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mail, Phone, MapPin, CheckCircle, Send } from "lucide-react";
+import { Mail, Phone, MapPin, CheckCircle, Send, ShieldCheck } from "lucide-react";
+
+// Turnstile Sitekey (gleich für alle SF-Projekte)
+const TURNSTILE_SITEKEY = "0x4AAAAAADVEqwJz-pyeZXi0";
 
 const ContactForm: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -13,25 +16,81 @@ const ContactForm: React.FC = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const turnstileRef = useRef<HTMLDivElement>(null);
+  const widgetIdRef = useRef<string | null>(null);
+
+  // Turnstile Script laden & Widget rendern
+  useEffect(() => {
+    const scriptId = "cf-turnstile-script";
+    const existingScript = document.getElementById(scriptId);
+
+    const renderWidget = () => {
+      if (turnstileRef.current && (window as any).turnstile && !widgetIdRef.current) {
+        widgetIdRef.current = (window as any).turnstile.render(turnstileRef.current, {
+          sitekey: TURNSTILE_SITEKEY,
+          callback: (token: string) => {
+            setTurnstileToken(token);
+            setErrorMessage("");
+          },
+          "expired-callback": () => {
+            setTurnstileToken("");
+          },
+          theme: "light",
+        });
+      }
+    };
+
+    if (!existingScript) {
+      const script = document.createElement("script");
+      script.id = scriptId;
+      script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+      script.async = true;
+      script.defer = true;
+      script.onload = () => {
+        setTimeout(renderWidget, 100);
+      };
+      document.head.appendChild(script);
+    } else {
+      setTimeout(renderWidget, 100);
+    }
+
+    return () => {
+      if (widgetIdRef.current && (window as any).turnstile) {
+        try {
+          (window as any).turnstile.remove(widgetIdRef.current);
+        } catch (e) {}
+        widgetIdRef.current = null;
+      }
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setErrorMessage("");
 
+    if (!turnstileToken) {
+      setErrorMessage("Bitte bestätigen Sie den Spam-Schutz.");
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
-      const response = await fetch("https://work4palace.pages.dev/api/send-email", {
+      const response = await fetch("https://friesescholzwebdesign.pages.dev/api/send-email", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          source: "work4palace",
           name: formData.name,
           email: formData.email,
           phone: formData.phone,
           projectType: formData.projectType,
           message: formData.message,
-          formType: "contact"
+          formType: "contact",
+          turnstileToken: turnstileToken,
         }),
       });
 
@@ -40,9 +99,18 @@ const ContactForm: React.FC = () => {
         setIsSubmitted(true);
       } else {
         setErrorMessage(data.message || "Es gab ein Problem beim Senden Ihrer Anfrage.");
+        // Turnstile resetten
+        if ((window as any).turnstile && widgetIdRef.current) {
+          (window as any).turnstile.reset(widgetIdRef.current);
+          setTurnstileToken("");
+        }
       }
     } catch (err) {
       setErrorMessage("Netzwerkfehler. Bitte versuchen Sie es später noch einmal oder kontaktieren Sie uns direkt.");
+      if ((window as any).turnstile && widgetIdRef.current) {
+        (window as any).turnstile.reset(widgetIdRef.current);
+        setTurnstileToken("");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -161,7 +229,7 @@ const ContactForm: React.FC = () => {
                     </select>
                   </div>
 
-                  <div className="form-group" style={{ marginBottom: "3rem" }}>
+                  <div className="form-group" style={{ marginBottom: "2rem" }}>
                     <label className="form-label" htmlFor="message">Projektbeschreibung / Ihre Wünsche</label>
                     <textarea
                       className="form-textarea"
@@ -174,6 +242,17 @@ const ContactForm: React.FC = () => {
                     ></textarea>
                   </div>
 
+                  {/* Cloudflare Turnstile Widget */}
+                  <div style={turnstileWrapperStyle}>
+                    <div ref={turnstileRef}></div>
+                    {turnstileToken && (
+                      <div style={turnstileSuccessStyle}>
+                        <ShieldCheck size={14} />
+                        <span>Verifiziert</span>
+                      </div>
+                    )}
+                  </div>
+
                   {errorMessage && (
                     <div style={{ color: "#e63946", fontSize: "0.95rem", marginBottom: "1.5rem", fontWeight: 400, fontFamily: "var(--font-sans)" }}>
                       ⚠️ {errorMessage}
@@ -184,7 +263,7 @@ const ContactForm: React.FC = () => {
                     className="btn btn-primary" 
                     type="submit" 
                     style={submitBtnStyle}
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || !turnstileToken}
                   >
                     {isSubmitting ? "Wird gesendet..." : "Anfrage absenden"}
                     {!isSubmitting && <Send size={14} style={{ marginLeft: "0.75rem" }} />}
@@ -284,6 +363,22 @@ const formTitleStyle: React.CSSProperties = {
 const formRowStyle: React.CSSProperties = {
   display: "flex",
   gap: "2rem"
+};
+
+const turnstileWrapperStyle: React.CSSProperties = {
+  marginBottom: "1.5rem",
+  display: "flex",
+  flexDirection: "column",
+  gap: "0.5rem",
+};
+
+const turnstileSuccessStyle: React.CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  gap: "0.4rem",
+  fontSize: "0.8rem",
+  color: "#22c55e",
+  fontWeight: 500,
 };
 
 const submitBtnStyle: React.CSSProperties = {

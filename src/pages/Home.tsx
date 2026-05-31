@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Hammer, Trash2, Layers, Trees, Compass, ArrowRight, ClipboardCheck, ChevronLeft, ChevronRight, CheckCircle2, Mail, Award } from "lucide-react";
 import ArchitecturalHero from "../components/ArchitecturalHero";
@@ -50,18 +50,68 @@ const Home: React.FC<HomeProps> = ({ onContactClick, onServicesClick, onProjects
   const [plannerSuccess, setPlannerSuccess] = useState(false);
   const [plannerSubmitting, setPlannerSubmitting] = useState(false);
   const [plannerError, setPlannerError] = useState("");
+  const [plannerTurnstileToken, setPlannerTurnstileToken] = useState("");
+  const plannerTurnstileRef = useRef<HTMLDivElement>(null);
+  const plannerWidgetIdRef = useRef<string | null>(null);
+
+  // Turnstile für Planner laden wenn Step 3 aktiv
+  useEffect(() => {
+    if (plannerStep !== 3) return;
+    const scriptId = "cf-turnstile-script";
+    let existingScript = document.getElementById(scriptId);
+
+    const renderWidget = () => {
+      if (plannerTurnstileRef.current && (window as any).turnstile && !plannerWidgetIdRef.current) {
+        plannerWidgetIdRef.current = (window as any).turnstile.render(plannerTurnstileRef.current, {
+          sitekey: "0x4AAAAAADVEqwJz-pyeZXi0",
+          callback: (token: string) => {
+            setPlannerTurnstileToken(token);
+            setPlannerError("");
+          },
+          "expired-callback": () => setPlannerTurnstileToken(""),
+          theme: "light",
+        });
+      }
+    };
+
+    if (!existingScript) {
+      const script = document.createElement("script");
+      script.id = scriptId;
+      script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+      script.async = true;
+      script.defer = true;
+      script.onload = () => setTimeout(renderWidget, 100);
+      document.head.appendChild(script);
+    } else {
+      setTimeout(renderWidget, 100);
+    }
+
+    return () => {
+      if (plannerWidgetIdRef.current && (window as any).turnstile) {
+        try { (window as any).turnstile.remove(plannerWidgetIdRef.current); } catch (e) {}
+        plannerWidgetIdRef.current = null;
+      }
+    };
+  }, [plannerStep]);
 
   const handlePlannerSubmit = async () => {
     setPlannerSubmitting(true);
     setPlannerError("");
 
+    if (!plannerTurnstileToken) {
+      setPlannerError("Bitte bestätigen Sie den Spam-Schutz.");
+      setPlannerSubmitting(false);
+      return;
+    }
+
     try {
-      const response = await fetch("https://work4palace.pages.dev/api/send-email", {
+      const response = await fetch("https://friesescholzwebdesign.pages.dev/api/send-email", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          source: "work4palace",
           name: plannerData.name,
           email: plannerData.email,
           phone: plannerData.phone,
@@ -70,7 +120,8 @@ const Home: React.FC<HomeProps> = ({ onContactClick, onServicesClick, onProjects
           location: plannerData.location,
           timeframe: plannerData.timeframe,
           message: plannerData.message,
-          formType: "planner"
+          formType: "planner",
+          turnstileToken: plannerTurnstileToken,
         }),
       });
 
@@ -79,9 +130,17 @@ const Home: React.FC<HomeProps> = ({ onContactClick, onServicesClick, onProjects
         setPlannerSuccess(true);
       } else {
         setPlannerError(data.message || "Es gab ein Problem beim Speichern Ihrer Konfiguration.");
+        if ((window as any).turnstile && plannerWidgetIdRef.current) {
+          (window as any).turnstile.reset(plannerWidgetIdRef.current);
+          setPlannerTurnstileToken("");
+        }
       }
     } catch (err) {
       setPlannerError("Netzwerkfehler. Bitte versuchen Sie es später noch einmal.");
+      if ((window as any).turnstile && plannerWidgetIdRef.current) {
+        (window as any).turnstile.reset(plannerWidgetIdRef.current);
+        setPlannerTurnstileToken("");
+      }
     } finally {
       setPlannerSubmitting(false);
     }
@@ -1181,9 +1240,9 @@ const Home: React.FC<HomeProps> = ({ onContactClick, onServicesClick, onProjects
 
                     <button 
                       className="btn btn-primary" 
-                      disabled={!plannerData.name || !plannerData.email || plannerSubmitting}
+                      disabled={!plannerData.name || !plannerData.email || plannerSubmitting || !plannerTurnstileToken}
                       onClick={handlePlannerSubmit}
-                      style={{ opacity: (!plannerData.name || !plannerData.email || plannerSubmitting) ? 0.5 : 1, cursor: (!plannerData.name || !plannerData.email || plannerSubmitting) ? "not-allowed" : "pointer" }}
+                      style={{ opacity: (!plannerData.name || !plannerData.email || plannerSubmitting || !plannerTurnstileToken) ? 0.5 : 1, cursor: (!plannerData.name || !plannerData.email || plannerSubmitting || !plannerTurnstileToken) ? "not-allowed" : "pointer" }}
                     >
                       {plannerSubmitting ? "Wird gesendet..." : "Konfiguration absenden"}
                       {!plannerSubmitting && <ClipboardCheck size={14} style={{ marginLeft: "0.5rem" }} />}
