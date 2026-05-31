@@ -239,7 +239,7 @@ export async function onRequestPost(context) {
         'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        from: 'work4palace Manufaktur <anfragen@scholz-friese-webdesign.de>',
+        from: 'work4palace Manufaktur <anfragen@scholz-friese.de>',
         to: 'info@scholz-friese-webdesign.de', // Destination email
         subject: subject,
         html: emailHtml,
