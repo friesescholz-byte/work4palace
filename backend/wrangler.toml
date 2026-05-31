@@ -1,0 +1,6 @@
+name = "work4palace-backend"
+main = "src/index.js"
+compatibility_date = "2024-05-23"
+
+[vars]
+RESEND_API_KEY = "re_23WnEvZS_MiA7sHvE1HVkZC5TDV7TeqXi"

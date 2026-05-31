@@ -56,7 +56,7 @@ const Home: React.FC<HomeProps> = ({ onContactClick, onServicesClick, onProjects
     setPlannerError("");
 
     try {
-      const response = await fetch("/api/send-email", {
+      const response = await fetch("https://work4palace-backend.friese-scholz.workers.dev/api/send-email", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
