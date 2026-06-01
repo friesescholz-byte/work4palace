@@ -63,7 +63,7 @@ const Home: React.FC<HomeProps> = ({ onContactClick, onServicesClick, onProjects
     const renderWidget = () => {
       if (plannerTurnstileRef.current && (window as any).turnstile && !plannerWidgetIdRef.current) {
         plannerWidgetIdRef.current = (window as any).turnstile.render(plannerTurnstileRef.current, {
-          sitekey: "0x4AAAAAADVEqwJz-pyeZXi0",
+          sitekey: "0x4AAAAAADcY8kmyHAHqRtOc",
           callback: (token: string) => {
             setPlannerTurnstileToken(token);
             setPlannerError("");

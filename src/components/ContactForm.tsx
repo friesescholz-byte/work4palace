@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mail, Phone, MapPin, CheckCircle, Send, ShieldCheck } from "lucide-react";
 
-// Turnstile Sitekey (gleich für alle SF-Projekte)
-const TURNSTILE_SITEKEY = "0x4AAAAAADVEqwJz-pyeZXi0";
+// Turnstile Sitekey (spezifisch für work4palace)
+const TURNSTILE_SITEKEY = "0x4AAAAAADcY8kmyHAHqRtOc";
 
 const ContactForm: React.FC = () => {
   const [formData, setFormData] = useState({
