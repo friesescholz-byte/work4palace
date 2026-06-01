@@ -74,8 +74,9 @@ const ContactPage: React.FC = () => {
     };
   }, [plannerStep]);
 
-  // States & helper functions for simulated premium Drag & Drop Photo Uploader
+  // States & helper functions for real Drag & Drop Photo Uploader (Base64 for Resend)
   const [uploadedFiles, setUploadedFiles] = useState<{ name: string; size: string }[]>([]);
+  const [fileAttachments, setFileAttachments] = useState<{ filename: string; content: string }[]>([]);
   const [dragActive, setDragActive] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -91,27 +92,50 @@ const ContactPage: React.FC = () => {
   };
 
   const processFiles = (files: FileList) => {
+    if (!files.length) return;
     setIsUploading(true);
     setUploadProgress(0);
     
-    // Simulate premium visual uploader progress
-    const interval = setInterval(() => {
-      setUploadProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
+    const newAttachments: { filename: string; content: string }[] = [];
+    const newFiles: { name: string; size: string }[] = [];
+    let loadedCount = 0;
+    
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const reader = new FileReader();
+      
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        // Base64-Header entfernen (z.B. "data:image/png;base64,")
+        const base64Content = result.split(',')[1];
+        
+        newAttachments.push({
+          filename: file.name,
+          content: base64Content
+        });
+        
+        const sizeInMb = (file.size / (1024 * 1024)).toFixed(1);
+        newFiles.push({ name: file.name, size: `${sizeInMb} MB` });
+        
+        loadedCount++;
+        
+        // Progress setzen
+        setUploadProgress(Math.round((loadedCount / files.length) * 100));
+        
+        if (loadedCount === files.length) {
           setIsUploading(false);
-          const newFiles: { name: string; size: string }[] = [];
-          for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            const sizeInMb = (file.size / (1024 * 1024)).toFixed(1);
-            newFiles.push({ name: file.name, size: `${sizeInMb} MB` });
-          }
-          setUploadedFiles((prevFiles) => [...prevFiles, ...newFiles]);
-          return 100;
+          setUploadedFiles((prev) => [...prev, ...newFiles]);
+          setFileAttachments((prev) => [...prev, ...newAttachments]);
         }
-        return prev + 25;
-      });
-    }, 150);
+      };
+      
+      reader.onerror = () => {
+        setIsUploading(false);
+        console.error("FileReader Fehler beim Laden der Datei");
+      };
+      
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -132,6 +156,7 @@ const ContactPage: React.FC = () => {
 
   const removeUploadedFile = (indexToRemove: number) => {
     setUploadedFiles((prev) => prev.filter((_, idx) => idx !== indexToRemove));
+    setFileAttachments((prev) => prev.filter((_, idx) => idx !== indexToRemove));
   };
 
   const handleNext = () => {
@@ -170,6 +195,7 @@ const ContactPage: React.FC = () => {
           timeframe: formData.timeframe,
           message: formData.message,
           formType: "planner",
+          attachments: fileAttachments,
           turnstileToken: turnstileToken,
         }),
       });
@@ -628,6 +654,7 @@ const ContactPage: React.FC = () => {
                         setPlannerStep(1);
                         setIsSubmitted(false);
                         setUploadedFiles([]);
+                        setFileAttachments([]);
                         setFormData({
                           name: "",
                           email: "",
