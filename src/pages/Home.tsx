@@ -64,7 +64,7 @@ const Home: React.FC<HomeProps> = ({ onContactClick, onServicesClick, onProjects
       return;
     }
 
-    let interval: NodeJS.Timeout;
+    let interval: any;
 
     const renderWidget = () => {
       if (plannerTurnstileRef.current && (window as any).turnstile && !plannerWidgetIdRef.current) {

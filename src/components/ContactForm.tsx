@@ -22,7 +22,7 @@ const ContactForm: React.FC = () => {
 
   // Turnstile Widget rendern
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: any;
 
     const renderWidget = () => {
       if (turnstileRef.current && (window as any).turnstile && !widgetIdRef.current) {
