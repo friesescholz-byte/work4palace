@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle2, ArrowRight, ArrowLeft, ClipboardCheck, Compass, Award, UserCheck } from "lucide-react";
+import { CheckCircle2, ArrowRight, ArrowLeft, ClipboardCheck, Compass, Award, UserCheck, ShieldCheck } from "lucide-react";
 
 const ContactPage: React.FC = () => {
   const [plannerStep, setPlannerStep] = useState(1);
@@ -15,6 +15,64 @@ const ContactPage: React.FC = () => {
     message: ""
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const turnstileRef = React.useRef<HTMLDivElement>(null);
+  const widgetIdRef = React.useRef<string | null>(null);
+
+  // Turnstile Widget laden, wenn Schritt 3 aktiv ist
+  React.useEffect(() => {
+    if (plannerStep !== 3) {
+      if (widgetIdRef.current && (window as any).turnstile) {
+        try { (window as any).turnstile.remove(widgetIdRef.current); } catch (e) {}
+        widgetIdRef.current = null;
+      }
+      return;
+    }
+
+    let interval: any;
+
+    const renderWidget = () => {
+      if (turnstileRef.current && (window as any).turnstile && !widgetIdRef.current) {
+        try {
+          // Container leeren (gegen React StrictMode Doppel-Render)
+          turnstileRef.current.innerHTML = "";
+          
+          widgetIdRef.current = (window as any).turnstile.render(turnstileRef.current, {
+            sitekey: "0x4AAAAAADcY8kmyHAHqRtOc",
+            callback: (token: string) => {
+              setTurnstileToken(token);
+              setErrorMessage("");
+            },
+            "expired-callback": () => setTurnstileToken(""),
+            theme: "light",
+          });
+          if (interval) clearInterval(interval);
+        } catch (e) {
+          console.error("Turnstile render error in ContactPage:", e);
+        }
+      }
+    };
+
+    renderWidget();
+
+    if (!widgetIdRef.current) {
+      interval = setInterval(() => {
+        if ((window as any).turnstile) {
+          renderWidget();
+        }
+      }, 100);
+    }
+
+    return () => {
+      if (interval) clearInterval(interval);
+      if (widgetIdRef.current && (window as any).turnstile) {
+        try { (window as any).turnstile.remove(widgetIdRef.current); } catch (e) {}
+        widgetIdRef.current = null;
+      }
+    };
+  }, [plannerStep]);
 
   // States & helper functions for simulated premium Drag & Drop Photo Uploader
   const [uploadedFiles, setUploadedFiles] = useState<{ name: string; size: string }[]>([]);
@@ -84,11 +142,57 @@ const ContactPage: React.FC = () => {
     if (plannerStep > 1) setPlannerStep(plannerStep - 1);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setTimeout(() => {
-      setIsSubmitted(true);
-    }, 800);
+    setIsSubmitting(true);
+    setErrorMessage("");
+
+    if (!turnstileToken) {
+      setErrorMessage("Bitte bestätigen Sie den Spam-Schutz.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      const response = await fetch("https://friesescholzwebdesign.pages.dev/api/send-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          source: "work4palace",
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          location: formData.location,
+          projectType: formData.projectType,
+          scopeSize: formData.scopeSize,
+          timeframe: formData.timeframe,
+          message: formData.message,
+          formType: "planner",
+          turnstileToken: turnstileToken,
+        }),
+      });
+
+      const data = await response.json();
+      if (response.ok && data.success) {
+        setIsSubmitted(true);
+      } else {
+        setErrorMessage(data.message || "Es gab ein Problem beim Senden Ihrer Anfrage.");
+        if ((window as any).turnstile && widgetIdRef.current) {
+          (window as any).turnstile.reset(widgetIdRef.current);
+          setTurnstileToken("");
+        }
+      }
+    } catch (err) {
+      setErrorMessage("Netzwerkfehler. Bitte versuchen Sie es später noch einmal oder kontaktieren Sie uns direkt.");
+      if ((window as any).turnstile && widgetIdRef.current) {
+        (window as any).turnstile.reset(widgetIdRef.current);
+        setTurnstileToken("");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const ease = [0.16, 1, 0.3, 1] as const;
@@ -460,19 +564,39 @@ const ContactPage: React.FC = () => {
                           </div>
                         </div>
 
+                        {/* Cloudflare Turnstile Widget */}
+                        <div style={{ marginTop: "2rem", marginBottom: "1.5rem", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                          <div ref={turnstileRef}></div>
+                          {turnstileToken && (
+                            <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.8rem", color: "#22c55e", fontWeight: 500 }}>
+                              <ShieldCheck size={14} />
+                              <span>Verifiziert</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {errorMessage && (
+                          <div style={{ color: "#e63946", fontSize: "0.95rem", marginBottom: "1.5rem", fontWeight: 400, fontFamily: "var(--font-sans)" }}>
+                            ⚠️ {errorMessage}
+                          </div>
+                        )}
+
                         <div className="planner-nav-row">
-                          <button className="btn btn-secondary" onClick={handleBack}>
+                          <button className="btn btn-secondary" disabled={isSubmitting} onClick={handleBack}>
                             <ArrowLeft size={14} style={{ marginRight: "0.5rem" }} />
                             Zurück
                           </button>
                           <button
                             className="btn btn-primary"
-                            disabled={!formData.name || !formData.email}
+                            disabled={!formData.name || !formData.email || isSubmitting || !turnstileToken}
                             onClick={handleSubmit}
-                            style={{ opacity: (!formData.name || !formData.email) ? 0.5 : 1, cursor: (!formData.name || !formData.email) ? "not-allowed" : "pointer" }}
+                            style={{ 
+                              opacity: (!formData.name || !formData.email || isSubmitting || !turnstileToken) ? 0.5 : 1, 
+                              cursor: (!formData.name || !formData.email || isSubmitting || !turnstileToken) ? "not-allowed" : "pointer" 
+                            }}
                           >
-                            Anfrage absenden
-                            <ClipboardCheck size={14} style={{ marginLeft: "0.5rem" }} />
+                            {isSubmitting ? "Wird gesendet..." : "Anfrage absenden"}
+                            {!isSubmitting && <ClipboardCheck size={14} style={{ marginLeft: "0.5rem" }} />}
                           </button>
                         </div>
                       </motion.div>

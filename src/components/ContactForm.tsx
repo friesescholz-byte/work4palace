@@ -27,6 +27,9 @@ const ContactForm: React.FC = () => {
     const renderWidget = () => {
       if (turnstileRef.current && (window as any).turnstile && !widgetIdRef.current) {
         try {
+          // Container leeren, um Doppel-Render-Konflikte (React StrictMode) zu vermeiden
+          turnstileRef.current.innerHTML = "";
+          
           widgetIdRef.current = (window as any).turnstile.render(turnstileRef.current, {
             sitekey: TURNSTILE_SITEKEY,
             callback: (token: string) => {

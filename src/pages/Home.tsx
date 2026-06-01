@@ -69,6 +69,9 @@ const Home: React.FC<HomeProps> = ({ onContactClick, onServicesClick, onProjects
     const renderWidget = () => {
       if (plannerTurnstileRef.current && (window as any).turnstile && !plannerWidgetIdRef.current) {
         try {
+          // Container leeren, um Doppel-Render-Konflikte (React StrictMode) zu vermeiden
+          plannerTurnstileRef.current.innerHTML = "";
+          
           plannerWidgetIdRef.current = (window as any).turnstile.render(plannerTurnstileRef.current, {
             sitekey: "0x4AAAAAADcY8kmyHAHqRtOc",
             callback: (token: string) => {
