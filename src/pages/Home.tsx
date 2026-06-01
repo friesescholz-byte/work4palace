@@ -56,37 +56,49 @@ const Home: React.FC<HomeProps> = ({ onContactClick, onServicesClick, onProjects
 
   // Turnstile für Planner laden wenn Step 3 aktiv
   useEffect(() => {
-    if (plannerStep !== 3) return;
-    const scriptId = "cf-turnstile-script";
-    let existingScript = document.getElementById(scriptId);
+    if (plannerStep !== 3) {
+      if (plannerWidgetIdRef.current && (window as any).turnstile) {
+        try { (window as any).turnstile.remove(plannerWidgetIdRef.current); } catch (e) {}
+        plannerWidgetIdRef.current = null;
+      }
+      return;
+    }
+
+    let interval: NodeJS.Timeout;
 
     const renderWidget = () => {
       if (plannerTurnstileRef.current && (window as any).turnstile && !plannerWidgetIdRef.current) {
-        plannerWidgetIdRef.current = (window as any).turnstile.render(plannerTurnstileRef.current, {
-          sitekey: "0x4AAAAAADcY8kmyHAHqRtOc",
-          callback: (token: string) => {
-            setPlannerTurnstileToken(token);
-            setPlannerError("");
-          },
-          "expired-callback": () => setPlannerTurnstileToken(""),
-          theme: "light",
-        });
+        try {
+          plannerWidgetIdRef.current = (window as any).turnstile.render(plannerTurnstileRef.current, {
+            sitekey: "0x4AAAAAADcY8kmyHAHqRtOc",
+            callback: (token: string) => {
+              setPlannerTurnstileToken(token);
+              setPlannerError("");
+            },
+            "expired-callback": () => setPlannerTurnstileToken(""),
+            theme: "light",
+          });
+          if (interval) clearInterval(interval);
+        } catch (e) {
+          console.error("Turnstile render error in planner:", e);
+        }
       }
     };
 
-    if (!existingScript) {
-      const script = document.createElement("script");
-      script.id = scriptId;
-      script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
-      script.async = true;
-      script.defer = true;
-      script.onload = () => setTimeout(renderWidget, 100);
-      document.head.appendChild(script);
-    } else {
-      setTimeout(renderWidget, 100);
+    // Sofort versuchen zu rendern
+    renderWidget();
+
+    // Falls turnstile noch nicht bereit ist, polle kurz
+    if (!plannerWidgetIdRef.current) {
+      interval = setInterval(() => {
+        if ((window as any).turnstile) {
+          renderWidget();
+        }
+      }, 100);
     }
 
     return () => {
+      if (interval) clearInterval(interval);
       if (plannerWidgetIdRef.current && (window as any).turnstile) {
         try { (window as any).turnstile.remove(plannerWidgetIdRef.current); } catch (e) {}
         plannerWidgetIdRef.current = null;

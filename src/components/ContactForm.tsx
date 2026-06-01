@@ -20,42 +20,45 @@ const ContactForm: React.FC = () => {
   const turnstileRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
 
-  // Turnstile Script laden & Widget rendern
+  // Turnstile Widget rendern
   useEffect(() => {
-    const scriptId = "cf-turnstile-script";
-    const existingScript = document.getElementById(scriptId);
+    let interval: NodeJS.Timeout;
 
     const renderWidget = () => {
       if (turnstileRef.current && (window as any).turnstile && !widgetIdRef.current) {
-        widgetIdRef.current = (window as any).turnstile.render(turnstileRef.current, {
-          sitekey: TURNSTILE_SITEKEY,
-          callback: (token: string) => {
-            setTurnstileToken(token);
-            setErrorMessage("");
-          },
-          "expired-callback": () => {
-            setTurnstileToken("");
-          },
-          theme: "light",
-        });
+        try {
+          widgetIdRef.current = (window as any).turnstile.render(turnstileRef.current, {
+            sitekey: TURNSTILE_SITEKEY,
+            callback: (token: string) => {
+              setTurnstileToken(token);
+              setErrorMessage("");
+            },
+            "expired-callback": () => {
+              setTurnstileToken("");
+            },
+            theme: "light",
+          });
+          if (interval) clearInterval(interval);
+        } catch (e) {
+          console.error("Turnstile render error:", e);
+        }
       }
     };
 
-    if (!existingScript) {
-      const script = document.createElement("script");
-      script.id = scriptId;
-      script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
-      script.async = true;
-      script.defer = true;
-      script.onload = () => {
-        setTimeout(renderWidget, 100);
-      };
-      document.head.appendChild(script);
-    } else {
-      setTimeout(renderWidget, 100);
+    // Sofort versuchen zu rendern
+    renderWidget();
+
+    // Falls turnstile noch nicht bereit ist, polle kurz
+    if (!widgetIdRef.current) {
+      interval = setInterval(() => {
+        if ((window as any).turnstile) {
+          renderWidget();
+        }
+      }, 100);
     }
 
     return () => {
+      if (interval) clearInterval(interval);
       if (widgetIdRef.current && (window as any).turnstile) {
         try {
           (window as any).turnstile.remove(widgetIdRef.current);
