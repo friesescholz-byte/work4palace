@@ -113,6 +113,14 @@ const Home: React.FC<HomeProps> = ({ onContactClick, onServicesClick, onProjects
     setPlannerSubmitting(true);
     setPlannerError("");
 
+    // E-Mail Format validieren
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(plannerData.email)) {
+      setPlannerError("Bitte geben Sie eine gültige E-Mail-Adresse ein.");
+      setPlannerSubmitting(false);
+      return;
+    }
+
     if (!plannerTurnstileToken) {
       setPlannerError("Bitte bestätigen Sie den Spam-Schutz.");
       setPlannerSubmitting(false);
@@ -1223,7 +1231,12 @@ const Home: React.FC<HomeProps> = ({ onContactClick, onServicesClick, onProjects
                           type="tel"
                           id="planner-phone"
                           value={plannerData.phone}
-                          onChange={(e) => setPlannerData({ ...plannerData, phone: e.target.value })}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (/^[0-9+\s()/-]*$/.test(val)) {
+                              setPlannerData({ ...plannerData, phone: val });
+                            }
+                          }}
                           placeholder="Telefonnummer eingeben"
                           style={{ color: "var(--text-dark)" }}
                         />

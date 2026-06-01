@@ -300,7 +300,7 @@ const ContactPage: React.FC = () => {
 
               <AnimatePresence mode="wait">
                 {!isSubmitted ? (
-                  <form onSubmit={(e) => e.preventDefault()} style={{ display: "flex", flexDirection: "column" }}>
+                  <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column" }}>
                     
                     {/* Step 1: Was soll saniert werden */}
                     {plannerStep === 1 && (
@@ -337,6 +337,7 @@ const ContactPage: React.FC = () => {
                         <div className="planner-nav-row" style={{ justifyContent: "flex-end" }}>
                           <button
                             className="btn btn-primary"
+                            type="button"
                             disabled={!formData.projectType}
                             onClick={handleNext}
                             style={{ opacity: !formData.projectType ? 0.5 : 1, cursor: !formData.projectType ? "not-allowed" : "pointer" }}
@@ -484,11 +485,11 @@ const ContactPage: React.FC = () => {
                         </div>
 
                         <div className="planner-nav-row" style={{ marginTop: "3rem" }}>
-                          <button className="btn btn-secondary" onClick={handleBack}>
+                          <button className="btn btn-secondary" type="button" onClick={handleBack}>
                             <ArrowLeft size={14} style={{ marginRight: "0.5rem" }} />
                             Zurück
                           </button>
-                          <button className="btn btn-primary" onClick={handleNext}>
+                          <button className="btn btn-primary" type="button" onClick={handleNext}>
                             Weiter
                             <ArrowRight size={14} style={{ marginLeft: "0.5rem" }} />
                           </button>
@@ -543,7 +544,12 @@ const ContactPage: React.FC = () => {
                                 type="tel"
                                 id="planner-phone"
                                 value={formData.phone}
-                                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  if (/^[0-9+\s()/-]*$/.test(val)) {
+                                    setFormData({ ...formData, phone: val });
+                                  }
+                                }}
                                 placeholder="Telefon eingeben"
                                 style={{ color: "var(--text-dark)" }}
                               />
@@ -588,8 +594,8 @@ const ContactPage: React.FC = () => {
                           </button>
                           <button
                             className="btn btn-primary"
+                            type="submit"
                             disabled={!formData.name || !formData.email || isSubmitting || !turnstileToken}
-                            onClick={handleSubmit}
                             style={{ 
                               opacity: (!formData.name || !formData.email || isSubmitting || !turnstileToken) ? 0.5 : 1, 
                               cursor: (!formData.name || !formData.email || isSubmitting || !turnstileToken) ? "not-allowed" : "pointer" 
