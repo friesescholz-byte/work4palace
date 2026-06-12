@@ -99,7 +99,7 @@ const ArchitecturalHero: React.FC<ArchitecturalHeroProps> = ({
         {/* Vertical center guideline */}
         <motion.line 
           x1="720" y1="60" x2="720" y2="860" 
-          stroke="rgba(184, 105, 69, 0.08)" 
+          stroke="rgba(46, 117, 186, 0.12)" /* Subtle blue guideline */
           strokeDasharray="4 6"
           initial={{ pathLength: 0 }}
           animate={{ pathLength: 1 }}
@@ -118,7 +118,7 @@ const ArchitecturalHero: React.FC<ArchitecturalHeroProps> = ({
         {/* Secondary Concentric Compass Ring */}
         <motion.circle 
           cx="720" cy="520" r="180" 
-          stroke="rgba(184, 105, 69, 0.04)" 
+          stroke="rgba(46, 117, 186, 0.06)" /* Subtle blue accent ring */
           strokeWidth="1"
           strokeDasharray="6 8"
           initial={{ pathLength: 0, rotate: 45 }}
@@ -156,7 +156,7 @@ const ArchitecturalHero: React.FC<ArchitecturalHeroProps> = ({
             className="text-serif"
           >
             Sanierung mit Substanz.<br />
-            <span style={{ color: "var(--secondary)", position: "relative" }}>
+            <span className="text-gradient-blue-orange" style={{ position: "relative", display: "inline-block" }}>
               Räume mit Charakter.
               <span className="headline-underline-centered"></span>
             </span>
@@ -167,7 +167,7 @@ const ArchitecturalHero: React.FC<ArchitecturalHeroProps> = ({
             style={sublineStyle}
             variants={fadeDownVariant}
           >
-            work4palace UG verbindet meisterhaftes Handwerk mit baubiologischer Verantwortung – vom schonenden Rückbau über atmungsaktive Mineralsysteme bis zum edlen Echtholzfinish.
+            Wir verbinden meisterhaftes Handwerk mit baubiologischer Verantwortung – vom schonenden Rückbau über atmungsaktive Mineralsysteme bis zum edlen Echtholzfinish.
           </motion.p>
 
           {/* Centered CTA Buttons */}
@@ -404,11 +404,11 @@ styleTag.innerHTML = `
     left: 10%;
   }
   .glow-2 {
-    width: 320px;
-    height: 320px;
-    background: rgba(232, 216, 189, 0.08);
-    bottom: 20%;
-    right: 10%;
+    width: 380px;
+    height: 380px;
+    background: rgba(46, 117, 186, 0.14); /* Exquisite mineral blue ambient glow */
+    bottom: 15%;
+    right: 8%;
   }
 
   /* Eyebrow terracotta dot marker centered */

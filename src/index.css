@@ -2,8 +2,8 @@
 
 :root {
   /* Design Tokens - Quiet Luxury Earth, Sand & Terracotta */
-  --bg-dark: #12110f;         /* Deep rich charcoal earth */
-  --bg-dark-soft: #1c1a17;    /* Softer dark for luxury cards */
+  --bg-dark: #0f1622;         /* Deep rich Prussian / Indigo night (Quiet Luxury Dark Blue) */
+  --bg-dark-soft: #151e2c;    /* Rich Dark Slate Blue for cards and header/footer */
   --bg-light: #faf6ee;        /* Cream / lime-plaster bright background */
   --bg-light-soft: #f4edd9;   /* Softer warm sand for details */
   
@@ -14,12 +14,13 @@
   
   --text-light: #faf6ee;
   --text-dark: #12110f;
-  --text-muted-light: #9f9b93;
+  --text-muted-light: #dad4c7; /* Brightened warm sand-gray for high contrast readability on dark blue backgrounds */
   --text-muted-dark: #5a5750;
   
-  --border-light: rgba(255, 255, 255, 0.08);
+  --border-light: rgba(147, 172, 198, 0.12); /* Subtle blue-ish border for dark mode */
   --border-dark: rgba(18, 17, 15, 0.08);
   --border-primary: rgba(184, 105, 69, 0.2);
+  --accent-blue-soft: rgba(46, 77, 108, 0.08); /* Soft mineral blue accent */
   
   --font-serif: 'Libre Baskerville', Georgia, serif;
   --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
@@ -86,12 +87,15 @@ a {
 }
 
 .section-dark {
-  background-color: rgba(18, 17, 15, 0.82); /* Increased translucency so background animation shines through clearly */
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background-color: rgba(15, 22, 34, 0.85); /* Deep translucent Prussian Indigo */
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   color: var(--text-light);
   position: relative;
   z-index: 2;
+  /* Subtle blue-orange mineral glow in dark sections */
+  background-image: radial-gradient(circle at 15% 20%, rgba(46, 117, 186, 0.04) 0%, transparent 45%),
+                    radial-gradient(circle at 85% 80%, rgba(184, 105, 69, 0.05) 0%, transparent 45%);
 }
 
 .section-light {
@@ -201,6 +205,31 @@ a {
   transform: translateY(-2px);
 }
 
+.btn-blue {
+  background-color: #1e3a5f; /* Deep mineral blue */
+  color: var(--text-light);
+}
+
+.btn-blue::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(184, 105, 69, 0.35), transparent); /* Earthy terracotta shimmer */
+  transition: 0.6s;
+}
+
+.btn-blue:hover::after {
+  left: 100%;
+}
+
+.btn-blue:hover {
+  background-color: #152c4a;
+  transform: translateY(-2px);
+}
+
 .btn-secondary {
   background-color: transparent;
   color: inherit;
@@ -249,6 +278,74 @@ a {
   background: var(--bg-light-soft);
   border: 1px solid var(--border-dark);
   color: var(--text-dark);
+}
+
+.luxury-card-blue {
+  background: #18283d; /* Premium deep indigo/slate card background */
+  border: 1px solid rgba(147, 172, 198, 0.15);
+  color: var(--text-light);
+}
+
+.luxury-card-blue::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: var(--primary); /* Terracotta line as highlight */
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: var(--transition-smooth);
+}
+
+.luxury-card-blue:hover {
+  transform: translateY(-8px);
+  border-color: var(--primary);
+  box-shadow: 0 20px 40px rgba(15, 22, 34, 0.5);
+}
+
+.luxury-card-blue:hover::before {
+  transform: scaleX(1);
+}
+
+.luxury-card-blue-orange {
+  background: linear-gradient(135deg, #101c2e 0%, #172a45 100%); /* Premium deep Prussian gradient */
+  border: 1px solid rgba(46, 117, 186, 0.22);
+  color: var(--text-light);
+  position: relative;
+  overflow: hidden;
+  transition: var(--transition-smooth);
+}
+
+.luxury-card-blue-orange::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, #4b9ae2, var(--primary)); /* Sleek blue-orange gradient border */
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: var(--transition-smooth);
+}
+
+.luxury-card-blue-orange:hover {
+  transform: translateY(-8px);
+  border-color: var(--primary);
+  box-shadow: 0 20px 40px rgba(15, 22, 34, 0.55), 0 0 20px rgba(184, 105, 69, 0.12);
+}
+
+.luxury-card-blue-orange:hover::before {
+  transform: scaleX(1);
+}
+
+.text-gradient-blue-orange {
+  background: linear-gradient(135deg, #4b9ae2 20%, var(--primary) 80%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 /* Forms & Inputs */
@@ -301,7 +398,7 @@ a {
 }
 
 .nav-header.scrolled {
-  background: rgba(18, 17, 15, 0.85);
+  background: rgba(15, 22, 34, 0.85);
   backdrop-filter: blur(20px);
   padding: 1rem 0;
   border-bottom: 1px solid var(--border-light);
@@ -312,7 +409,7 @@ a {
 .text-sans { font-family: var(--font-sans); }
 .text-center { text-align: center; }
 .text-primary { color: var(--primary); }
-.text-muted { opacity: 0.7; }
+.text-muted { opacity: 0.85; }
 
 .section-eyebrow {
   font-family: var(--font-sans);
@@ -499,12 +596,12 @@ a {
   bottom: 0;
   left: 0;
   width: 100%;
-  background: rgba(28, 26, 23, 0.9);
+  background: rgba(21, 30, 44, 0.9); /* Translucent Prussian Indigo */
   backdrop-filter: blur(15px);
-  border-top: 1px solid var(--border-primary);
+  border-top: 1.5px solid var(--primary); /* Terracotta highlight border */
   z-index: 900;
   padding: 1.25rem 0;
-  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 -10px 40px rgba(15, 22, 34, 0.3);
 }
 
 .sticky-cta-container {
@@ -1196,21 +1293,29 @@ a {
 }
 
 .roadmap-card:hover {
-  background-color: rgba(184, 105, 69, 0.02);
-  border-color: rgba(184, 105, 69, 0.15);
+  background-color: rgba(46, 117, 186, 0.03); /* Subtle mineral blue hover background */
+  border-color: rgba(46, 117, 186, 0.2);
   transform: translateX(4px);
 }
 
 .roadmap-icon-box {
   width: 44px;
   height: 44px;
-  background-color: rgba(184, 105, 69, 0.1);
-  color: var(--primary);
+  background-color: rgba(46, 117, 186, 0.1); /* Start mineral blue */
+  color: #2e75ba; /* Mineral blue */
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   border-radius: 50%;
+  transition: var(--transition-smooth);
+}
+
+.roadmap-card:hover .roadmap-icon-box {
+  background-color: var(--primary); /* Hover turns terracotta orange */
+  color: var(--text-light);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(184, 105, 69, 0.2);
 }
 
 .roadmap-texts {

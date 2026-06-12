@@ -704,7 +704,7 @@ const Home: React.FC<HomeProps> = ({ onContactClick, onServicesClick, onProjects
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.8, ease, delay: idx * 0.08 }}
-                className="luxury-card luxury-card-light"
+                className="luxury-card luxury-card-blue-orange"
                 style={{ display: "flex", flexDirection: "column", height: "100%" }}
               >
                 {/* Delicate blueprint drafting corner marks */}
@@ -718,13 +718,13 @@ const Home: React.FC<HomeProps> = ({ onContactClick, onServicesClick, onProjects
                 <div className="service-card-icon-box">
                   {srv.icon}
                 </div>
-                <h3 style={{ fontSize: "1.4rem", color: "var(--text-dark)", marginBottom: "0.25rem", transition: "color 0.4s ease" }}>
+                <h3 style={{ fontSize: "1.4rem", color: "var(--text-light)", marginBottom: "0.25rem", transition: "color 0.4s ease" }}>
                   {srv.title}
                 </h3>
                 <span style={{ fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--primary)", fontWeight: 600, marginBottom: "1rem", display: "block" }}>
                   {srv.subtitle}
                 </span>
-                <p style={{ color: "var(--text-muted-dark)", fontSize: "0.95rem", lineHeight: "1.65", flexGrow: 1, fontWeight: 300 }}>
+                <p style={{ color: "var(--text-muted-light)", fontSize: "0.95rem", lineHeight: "1.65", flexGrow: 1, fontWeight: 300 }}>
                   {srv.desc}
                 </p>
               </motion.div>
@@ -1676,6 +1676,46 @@ styleTag.innerHTML = `
     border-color: rgba(184, 105, 69, 0.3) !important;
     box-shadow: 0 20px 45px rgba(18, 17, 15, 0.08) !important;
   }
+
+  .luxury-card-blue-orange {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+
+  .luxury-card-blue-orange:hover {
+    transform: translateY(-8px) !important;
+    border-color: var(--primary) !important;
+    box-shadow: 0 20px 45px rgba(15, 22, 34, 0.45), 0 0 20px rgba(184, 105, 69, 0.12) !important;
+  }
+
+  .luxury-card-blue-orange .service-card-icon-box {
+    background-color: rgba(46, 117, 186, 0.1) !important;
+    border-color: rgba(46, 117, 186, 0.15) !important;
+    color: #4b9ae2 !important;
+  }
+
+  .luxury-card-blue-orange:hover .service-card-icon-box {
+    background-color: var(--primary) !important;
+    color: var(--text-light) !important;
+    border-color: var(--primary) !important;
+    transform: scale(1.08) rotate(360deg) !important;
+    box-shadow: 0 6px 15px rgba(184, 105, 69, 0.25) !important;
+  }
+
+  .luxury-card-blue-orange:hover .service-card-icon-box svg {
+    stroke: var(--text-light) !important;
+  }
+
+  .luxury-card-blue-orange .mark-tl { top: 12px; left: 12px; border-top-color: rgba(147, 172, 198, 0.25); border-left-color: rgba(147, 172, 198, 0.25); }
+  .luxury-card-blue-orange .mark-tr { top: 12px; right: 12px; border-top-color: rgba(147, 172, 198, 0.25); border-right-color: rgba(147, 172, 198, 0.25); }
+  .luxury-card-blue-orange .mark-bl { bottom: 12px; left: 12px; border-bottom-color: rgba(147, 172, 198, 0.25); border-left-color: rgba(147, 172, 198, 0.25); }
+  .luxury-card-blue-orange .mark-br { bottom: 12px; right: 12px; border-bottom-color: rgba(147, 172, 198, 0.25); border-right-color: rgba(147, 172, 198, 0.25); }
+
+  .luxury-card-blue-orange:hover .mark-tl { transform: translate(-3px, -3px) !important; border-color: var(--primary) !important; }
+  .luxury-card-blue-orange:hover .mark-tr { transform: translate(3px, -3px) !important; border-color: var(--primary) !important; }
+  .luxury-card-blue-orange:hover .mark-bl { transform: translate(-3px, 3px) !important; border-color: var(--primary) !important; }
+  .luxury-card-blue-orange:hover .mark-br { transform: translate(3px, 3px) !important; border-color: var(--primary) !important; }
 
   .service-card-icon-box {
     margin-bottom: 1.5rem;

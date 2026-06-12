@@ -50,18 +50,36 @@ const MaterialsSection: React.FC = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 0.8, ease, delay: idx * 0.15 }}
-              className="luxury-card luxury-card-light"
-              style={cardStyle}
+              className={`luxury-card ${idx === 1 ? "luxury-card-blue" : "luxury-card-light"}`}
+              style={{
+                ...cardStyle,
+                color: idx === 1 ? "var(--text-light)" : "var(--text-dark)"
+              }}
             >
-              <div style={iconWrapperStyle}>
-                {card.icon}
+              <div style={{
+                ...iconWrapperStyle,
+                backgroundColor: idx === 1 ? "rgba(255, 255, 255, 0.08)" : "rgba(184, 105, 69, 0.06)"
+              }}>
+                {idx === 1 ? React.cloneElement(card.icon as React.ReactElement<{ color?: string }>, { color: "var(--secondary)" }) : card.icon}
               </div>
-              <h3 style={cardTitleStyle}>{card.title}</h3>
+              <h3 style={{
+                ...cardTitleStyle,
+                color: idx === 1 ? "var(--text-light)" : "var(--text-dark)"
+              }}>{card.title}</h3>
               <span style={cardSubtitleStyle}>{card.subtitle}</span>
-              <p style={cardDescStyle}>{card.description}</p>
+              <p style={{
+                ...cardDescStyle,
+                color: idx === 1 ? "var(--text-muted-light)" : "var(--text-muted-dark)"
+              }}>{card.description}</p>
               
-              <div style={highlightStyle}>
-                <span style={highlightTextStyle}>{card.highlight}</span>
+              <div style={{
+                ...highlightStyle,
+                borderTop: idx === 1 ? "1px solid rgba(255, 255, 255, 0.08)" : "1px solid var(--border-dark)"
+              }}>
+                <span style={{
+                  ...highlightTextStyle,
+                  color: idx === 1 ? "var(--text-muted-light)" : "var(--text-muted-dark)"
+                }}>{card.highlight}</span>
               </div>
             </motion.div>
           ))}
