@@ -178,7 +178,7 @@ const ArchitecturalHero: React.FC<ArchitecturalHeroProps> = ({
             <button 
               className="btn btn-primary" 
               onClick={onContactClick}
-              style={{ padding: "1.1rem 2.25rem", boxShadow: "0 10px 25px rgba(184,105,69,0.12)" }}
+              style={{ padding: "1.1rem 2.25rem", boxShadow: "0 10px 25px rgba(34,67,108,0.25)" }}
             >
               Projekt anfragen
             </button>
