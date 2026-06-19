@@ -111,11 +111,12 @@ const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({ onProjectsClick }
               <button
                 key={proj.id}
                 onClick={() => selectProject(idx)}
+                className={`slider-toggle-btn ${activeProjIndex === idx ? "active-toggle" : ""}`}
                 style={{
                   ...toggleBtnStyle,
-                  backgroundColor: activeProjIndex === idx ? "var(--primary)" : "transparent",
+                  backgroundColor: activeProjIndex === idx ? "#1e3c60" : "transparent",
                   color: activeProjIndex === idx ? "var(--text-light)" : "var(--text-dark)",
-                  borderColor: activeProjIndex === idx ? "var(--primary)" : "var(--border-dark)"
+                  borderColor: activeProjIndex === idx ? "#1e3c60" : "var(--border-dark)"
                 }}
               >
                 {proj.title}
@@ -385,6 +386,10 @@ const labelStyle: React.CSSProperties = {
 
 const styleTag = document.createElement("style");
 styleTag.innerHTML = `
+  .slider-toggle-btn:not(.active-toggle):hover {
+    border-color: #1e3c60 !important;
+    color: #1e3c60 !important;
+  }
   @media (max-width: 900px) {
     .slider-grid {
       grid-template-columns: 1fr !important;
