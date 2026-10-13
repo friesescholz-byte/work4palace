@@ -18,7 +18,7 @@ export default {
         const data = await request.json();
         const { name, email, phone, projectType, message, formType, scopeSize, location, timeframe } = data;
 
-        const apiKey = env.RESEND_API_KEY || "re_23WnEvZS_MiA7sHvE1HVkZC5TDV7TeqXi";
+        const apiKey = env.RESEND_API_KEY;
 
         if (!name || !email) {
           return new Response(JSON.stringify({ success: false, message: "Name und E-Mail sind Pflichtfelder." }), {
