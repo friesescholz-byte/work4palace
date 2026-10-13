@@ -78,9 +78,33 @@ const AdminPage: React.FC<AdminPageProps> = ({ onPageChange }) => {
     localStorage.setItem("w4p_portfolio_items", JSON.stringify(newItems));
   };
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (passwordInput === "work4palace-2026") {
+    const cleanInput = passwordInput.trim();
+    if (!cleanInput) {
+      setLoginError(true);
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: cleanInput })
+      });
+      const data = await res.json();
+      if (res.ok && data?.success) {
+        setIsAdminLoggedIn(true);
+        setLoginError(false);
+        setPasswordInput("");
+        return;
+      }
+    } catch {}
+
+    // Fallback: Secure SHA-256 verification (no plaintext password in source code)
+    const hashBuffer = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(cleanInput));
+    const hashHex = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, "0")).join("");
+    if (hashHex === "d7bdaa50a39542a81f02ec327bfba6ea96b871d19547599fb0d1577b012c4e86") {
       setIsAdminLoggedIn(true);
       setLoginError(false);
       setPasswordInput("");
